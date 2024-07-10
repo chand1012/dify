@@ -1,6 +1,7 @@
 import json
 import time
 from collections.abc import Generator
+from datetime import datetime, timezone
 from typing import Optional, Union
 
 from core.app.entities.queue_entities import (
@@ -95,6 +96,9 @@ class WorkflowIterationCycleManage(WorkflowCycleStateManager):
                     error=None,
                     elapsed_time=time.perf_counter() - current_iteration.started_at,
                     total_tokens=current_iteration.total_tokens,
+                    execution_metadata={
+                        'total_tokens': current_iteration.total_tokens,
+                    },
                     finished_at=int(time.time()),
                     steps=current_iteration.current_index
                 )
@@ -128,7 +132,8 @@ class WorkflowIterationCycleManage(WorkflowCycleStateManager):
                 'started_run_index': node_run_index + 1,
                 'current_index': 0,
                 'steps_boundary': [],
-            })
+            }),
+            created_at=datetime.now(timezone.utc).replace(tzinfo=None)
         )
 
         db.session.add(workflow_node_execution)
@@ -276,6 +281,9 @@ class WorkflowIterationCycleManage(WorkflowCycleStateManager):
                     error=error,
                     elapsed_time=time.perf_counter() - current_iteration.started_at,
                     total_tokens=current_iteration.total_tokens,
+                    execution_metadata={
+                        'total_tokens': current_iteration.total_tokens,
+                    },
                     finished_at=int(time.time()),
                     steps=current_iteration.current_index
                 )
